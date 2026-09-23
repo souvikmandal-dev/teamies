@@ -1,0 +1,209 @@
+/* Teamies Workshop Design System - Component Overrides */
+
+body {
+  background-image: none;
+  background-color: var(--theme-bg);
+}
+
+::selection {
+  background-color: var(--theme-accent-soft);
+  color: var(--theme-accent);
+}
+
+main > header {
+  background-color: var(--theme-bg);
+  border-bottom: 1px solid var(--theme-border);
+}
+
+/* Surface Cards */
+:is(section, article, div).bg-white,
+:is(section, article, div).bg-white.rounded-2xl {
+  background-color: var(--theme-surface);
+  border-color: var(--theme-border);
+  box-shadow: none;
+}
+
+:is(a, button).rounded-full:is(.bg-zinc-950, .border) {
+  border-radius: 6px;
+}
+
+:is(a, button).bg-zinc-950:not(:disabled),
+.button-primary:not(:disabled) {
+  background-color: var(--theme-text);
+  color: var(--theme-bg);
+}
+
+:is(a, button).bg-zinc-950:not(:disabled):hover,
+.button-primary:not(:disabled):hover {
+  opacity: 0.9;
+}
+
+.button-secondary {
+  background-color: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+  color: var(--theme-text);
+}
+
+.button-secondary:hover {
+  border-color: var(--theme-text-muted);
+}
+
+:is(input, select, textarea).bg-white {
+  background-color: var(--theme-surface);
+  border-color: var(--theme-border);
+  color: var(--theme-text);
+}
+
+:is(input, select, textarea):focus-visible {
+  border-color: var(--theme-accent);
+  outline-color: var(--theme-accent);
+}
+
+.motion-home nav a:hover {
+  color: var(--theme-accent);
+}
+
+.hero-copy > p:first-child {
+  color: var(--theme-text-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+}
+
+.hero-copy h1 {
+  font-family: var(--font-sans);
+  letter-spacing: -0.04em;
+  font-weight: 700;
+}
+
+.journey-title {
+  color: var(--theme-text);
+  font-family: var(--font-sans);
+  letter-spacing: -0.03em;
+  font-weight: 700;
+}
+
+/* Workshop Build Flow Widget */
+.build-flow {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  align-content: center;
+  width: 100%;
+  max-width: 430px;
+  min-height: 440px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.build-flow-orbit {
+  position: absolute;
+  z-index: -1;
+  inset: 20px 0;
+  border: 1px dashed var(--theme-border);
+  border-radius: 50%;
+  background: transparent;
+}
+
+.build-flow-panel {
+  margin: 0 16px;
+  padding: 24px;
+  border: 1px solid var(--theme-border);
+  border-radius: 12px;
+  background-color: var(--theme-surface);
+  box-shadow: none;
+}
+
+.build-flow-chrome {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+.build-flow-chrome i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--theme-border);
+}
+.build-flow-chrome i:first-child {
+  background-color: var(--theme-warn);
+}
+.build-flow-chrome i:last-child {
+  background-color: var(--theme-accent);
+}
+
+.build-flow-title {
+  margin-bottom: 20px;
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 700;
+  text-align: left;
+  color: var(--theme-text);
+}
+
+.build-flow-track::before {
+  border-color: var(--theme-border);
+}
+
+.build-flow-icon {
+  background-color: var(--theme-bg);
+  border: 1px solid var(--theme-border);
+  color: var(--theme-text);
+  border-radius: 6px;
+}
+
+.build-flow-step {
+  color: var(--theme-text-muted);
+  font-family: var(--font-sans);
+}
+
+.build-flow-step[aria-pressed="true"] {
+  color: var(--theme-text);
+}
+
+.build-flow-step[aria-pressed="true"] .build-flow-icon {
+  background-color: var(--theme-accent);
+  border-color: var(--theme-accent);
+  color: var(--theme-bg);
+}
+
+.build-flow-number,
+.build-flow-description {
+  color: var(--theme-text-muted);
+  font-family: var(--font-mono);
+}
+
+.build-flow-progress {
+  height: 4px;
+  overflow: hidden;
+  border-radius: 2px;
+  background-color: var(--theme-border);
+}
+
+.build-flow-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background-color: var(--theme-accent);
+}
+
+.build-flow-badge {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--theme-border);
+  border-radius: 6px;
+  background-color: var(--theme-surface);
+  color: var(--theme-text);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.build-flow-badge > span {
+  color: var(--theme-accent);
+}

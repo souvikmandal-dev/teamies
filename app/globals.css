@@ -1,0 +1,326 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&display=swap");
+@import "tailwindcss";
+@import "./motion.css";
+@import "./sevenly-theme.css";
+
+:root {
+  color-scheme: light dark;
+
+  /* Teamies Visual Design System: "Build Log" Workshop Tokens */
+  /* Light mode (default) */
+  --paper: #F7F5F0;        /* base background, light mode */
+  --paper-raised: #FCFBF8; /* surface/card background, light mode */
+  --ink: #1A1D1F;          /* primary text, light mode */
+  --ink-soft: #4A4642;     /* muted text, light mode */
+  --moss: #2E5339;         /* primary accent — "active" state */
+  --moss-soft: #E7EDE5;    /* accent background tint */
+  --rust: #C4491D;         /* secondary accent — "stale"/attention state, not error-red */
+  --rust-soft: #F5E7DD;    /* rust background tint */
+  --stone: #DCD6C9;        /* borders, dividers */
+  --clay: #8B7355;         /* tertiary — tags/chips */
+  --clay-soft: #EFEAE0;    /* tag background tint */
+
+  /* Semantic mapping for light mode */
+  --theme-bg: var(--paper);
+  --theme-surface: var(--paper-raised);
+  --theme-text: var(--ink);
+  --theme-text-muted: var(--ink-soft);
+  --theme-border: var(--stone);
+  --theme-accent: var(--moss);
+  --theme-accent-soft: var(--moss-soft);
+  --theme-warn: var(--rust);
+  --theme-warn-soft: var(--rust-soft);
+  --theme-tag: var(--clay);
+  --theme-tag-soft: var(--clay-soft);
+
+  --background: var(--theme-bg);
+  --foreground: var(--theme-text);
+
+  /* Real fallback stacks for typography */
+  --font-serif: "Fraunces", Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark mode semantic equivalents */
+    --theme-bg: #17181A;
+    --theme-surface: #1F2123;
+    --theme-text: #EDEAE3;
+    --theme-text-muted: #AFA99E;
+    --theme-border: #35322C;
+    --theme-accent: #7FAE8C;
+    --theme-accent-soft: #223028;
+    --theme-warn: #E07A4C;
+    --theme-warn-soft: #33241B;
+    --theme-tag: #C6AD8D;
+    --theme-tag-soft: #2A2620;
+
+    --background: var(--theme-bg);
+    --foreground: var(--theme-text);
+  }
+}
+
+.dark {
+  --theme-bg: #17181A;
+  --theme-surface: #1F2123;
+  --theme-text: #EDEAE3;
+  --theme-text-muted: #AFA99E;
+  --theme-border: #35322C;
+  --theme-accent: #7FAE8C;
+  --theme-accent-soft: #223028;
+  --theme-warn: #E07A4C;
+  --theme-warn-soft: #33241B;
+  --theme-tag: #C6AD8D;
+  --theme-tag-soft: #2A2620;
+
+  --background: var(--theme-bg);
+  --foreground: var(--theme-text);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--theme-bg);
+  color: var(--theme-text);
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Tailwind CSS v4 Theme Token Extensions */
+@theme {
+  --font-serif: var(--font-serif);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  --color-paper: var(--paper);
+  --color-paper-raised: var(--paper-raised);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-moss: var(--moss);
+  --color-moss-soft: var(--moss-soft);
+  --color-rust: var(--rust);
+  --color-rust-soft: var(--rust-soft);
+  --color-stone: var(--stone);
+  --color-clay: var(--clay);
+  --color-clay-soft: var(--clay-soft);
+
+  --color-theme-bg: var(--theme-bg);
+  --color-theme-surface: var(--theme-surface);
+  --color-theme-text: var(--theme-text);
+  --color-theme-text-muted: var(--theme-text-muted);
+  --color-theme-border: var(--theme-border);
+  --color-theme-accent: var(--theme-accent);
+  --color-theme-accent-soft: var(--theme-accent-soft);
+  --color-theme-warn: var(--theme-warn);
+  --color-theme-warn-soft: var(--theme-warn-soft);
+  --color-theme-tag: var(--theme-tag);
+  --color-theme-tag-soft: var(--theme-tag-soft);
+
+  /* Map standard utility colors to theme tokens for seamless dark/light support */
+  --color-zinc-50: var(--theme-surface);
+  --color-zinc-100: var(--theme-tag-soft);
+  --color-zinc-200: var(--theme-border);
+  --color-zinc-300: var(--theme-border);
+  --color-zinc-400: var(--theme-text-muted);
+  --color-zinc-500: var(--theme-text-muted);
+  --color-zinc-600: var(--theme-text-muted);
+  --color-zinc-700: var(--theme-text);
+  --color-zinc-800: var(--theme-text);
+  --color-zinc-900: var(--theme-text);
+  --color-zinc-950: var(--theme-text);
+}
+
+@layer base {
+  body { overflow-wrap: anywhere; }
+  :where(div, section, article, aside, nav, fieldset, input, select, textarea) {
+    min-width: 0;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    color: var(--theme-text);
+    scroll-margin-top: 1.5rem;
+  }
+  input, select, textarea {
+    max-width: 100%;
+    background-color: var(--theme-surface);
+    color: var(--theme-text);
+    border-color: var(--theme-border);
+  }
+  input::placeholder, textarea::placeholder {
+    color: var(--theme-text-muted);
+    opacity: 0.75;
+  }
+  select option {
+    background-color: var(--theme-surface);
+    color: var(--theme-text);
+  }
+  button, a { -webkit-tap-highlight-color: transparent; }
+  button:not(:disabled), select, input[type="radio"], input[type="checkbox"] { cursor: pointer; }
+  button:disabled, input:disabled, select:disabled, textarea:disabled { cursor: not-allowed; }
+}
+
+/* Universal Form Control Styling & Accessible Contrast */
+:is(input, select, textarea) {
+  color: var(--theme-text);
+  background-color: var(--theme-surface);
+  border-color: var(--theme-border);
+}
+
+:is(input, select, textarea):focus {
+  border-color: var(--theme-accent);
+}
+
+:is(input, select, textarea):disabled {
+  opacity: 0.6;
+  color: var(--theme-text-muted);
+  background-color: var(--theme-bg);
+}
+
+:is(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--theme-accent);
+  outline-offset: 2px;
+}
+
+/* Browser Autofill Support: ensures high-contrast readable text in Chrome & Safari */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--theme-text) !important;
+  -webkit-box-shadow: 0 0 0px 1000px var(--theme-surface) inset !important;
+  box-shadow: 0 0 0px 1000px var(--theme-surface) inset !important;
+  caret-color: var(--theme-text) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+
+@layer components {
+  /* Workshop Button Styles */
+  .button-primary, .button-secondary, .button-danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    min-height: 2.5rem;
+    border-radius: 6px;
+    padding: .5rem 1.125rem;
+    font-size: .875rem;
+    font-weight: 500;
+    text-align: center;
+    transition: opacity .15s, background-color .15s;
+  }
+  .button-primary {
+    background: var(--theme-text);
+    color: var(--theme-bg);
+  }
+  .button-primary:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+  .button-secondary {
+    border: 1px solid var(--theme-border);
+    background: var(--theme-surface);
+    color: var(--theme-text);
+  }
+  .button-secondary:hover:not(:disabled) {
+    border-color: var(--theme-text-muted);
+  }
+  .button-danger {
+    border: 1px solid var(--theme-warn);
+    background: var(--theme-warn-soft);
+    color: var(--theme-warn);
+  }
+  .button-danger:hover:not(:disabled) {
+    opacity: 0.85;
+  }
+  :is(.button-primary, .button-secondary, .button-danger):disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Tag pill pattern */
+  .chip-tag {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    padding: 0.125rem 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--theme-tag);
+    background-color: var(--theme-tag-soft);
+    border: none;
+  }
+
+  /* Status Rail Cards */
+  .status-rail-active {
+    border-left: 4px solid var(--theme-accent) !important;
+  }
+  .status-rail-stale {
+    border-left: 4px solid var(--theme-warn) !important;
+  }
+
+  /* Status Badges */
+  .badge-active {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    padding: 0.125rem 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    font-family: var(--font-mono);
+    color: var(--theme-accent);
+    background-color: var(--theme-accent-soft);
+  }
+  .badge-stale {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    padding: 0.125rem 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    font-family: var(--font-mono);
+    color: var(--theme-warn);
+    background-color: var(--theme-warn-soft);
+  }
+
+  /* Workshop Secondary Action Link */
+  .action-link-secondary {
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    color: var(--theme-text);
+    transition: color 0.15s ease;
+  }
+  .action-link-secondary:hover {
+    color: var(--theme-accent);
+  }
+}
+
+@media (max-width: 639px) {
+  input:not([type="radio"]):not([type="checkbox"]), select, textarea { font-size: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto; transition-duration: 0s; }
+}
