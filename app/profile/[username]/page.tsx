@@ -9,6 +9,7 @@ import { TeamiesLogo } from "@/components/teamies-logo";
 import { LoadError } from "@/components/load-error";
 import { LogoutButton } from "@/components/logout-button";
 import { SocialLinks } from "@/components/social-links";
+import { humanize } from "@/lib/humanize";
 import { supabase } from "@/lib/supabase/client";
 import { isMissingColumnError } from "@/lib/supabase/schema-compat";
 
@@ -65,14 +66,6 @@ type JoinedProject = {
   } | null;
 };
 
-function humanize(value: string | null) {
-  if (value === "mvp") return "MVP";
-  if (!value) return "";
-  return value
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en", {

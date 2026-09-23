@@ -9,6 +9,7 @@ import { LogoutButton } from "@/components/logout-button";
 import { createClient } from "@/lib/supabase/server";
 import { isMissingColumnError } from "@/lib/supabase/schema-compat";
 import { formatRelativeActivity, isProjectStale } from "@/lib/time";
+import { humanize } from "@/lib/humanize";
 
 type ExperienceLevel = "beginner" | "intermediate" | "advanced";
 type BuilderMode =
@@ -89,15 +90,6 @@ const builderModeLabels: Record<BuilderMode, string> = {
   want_something_to_build: "I want something to build",
   both: "I want to build and find collaborators",
 };
-
-function humanize(value: string | null) {
-  if (value === "mvp") return "MVP";
-  if (!value) return "";
-  return value
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en", {
