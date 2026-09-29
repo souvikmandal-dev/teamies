@@ -20,10 +20,83 @@ export async function submitFeedback(input: unknown) {
       console.error("[feedback] submit failed", { code: error.code });
       return { error: error.code === "P0001" ? "You've sent five reports this hour. Please try again later." : "We couldn't save your feedback. Please try again." };
     }
+    revalidatePath("/reviews");
+    revalidatePath("/feedback");
     return { success: true };
   } catch {
     console.error("[feedback] submit unavailable");
     return { error: "Feedback is temporarily unavailable. Please try again." };
+  }
+}
+
+export type MyFeedbackRecord = {
+  id: string;
+  feedback_type: string;
+  rating: number;
+  title: string;
+  message: string;
+  page_context?: string | null;
+  is_public: boolean;
+  is_anonymous: boolean;
+  display_name: string;
+  status: string;
+  created_at: string;
+  updated_at?: string;
+};
+
+export async function getMyFeedback(): Promise<{
+  authenticated: boolean;
+  userEmail?: string;
+  userId?: string;
+  items: MyFeedbackRecord[];
+  error?: string;
+}> {
+  try {
+    const db = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await db.auth.getUser();
+
+    if (authError || !user) {
+      return { authenticated: false, items: [] };
+    }
+
+    // Try RPC get_my_feedback first (defined in migration 012)
+    const { data: rpcData, error: rpcError } = await db.rpc("get_my_feedback");
+    if (!rpcError && Array.isArray(rpcData)) {
+      return {
+        authenticated: true,
+        userEmail: user.email,
+        userId: user.id,
+        items: rpcData as MyFeedbackRecord[],
+      };
+    }
+
+    // Fallback: direct select (works if user has select permissions)
+    const { data: directData, error: directError } = await db
+      .from("feedback")
+      .select("id,feedback_type,rating,title,message,page_context,is_public,is_anonymous,display_name,status,created_at,updated_at")
+      .order("created_at", { ascending: false });
+
+    if (!directError && Array.isArray(directData)) {
+      return {
+        authenticated: true,
+        userEmail: user.email,
+        userId: user.id,
+        items: directData as MyFeedbackRecord[],
+      };
+    }
+
+    return {
+      authenticated: true,
+      userEmail: user.email,
+      userId: user.id,
+      items: [],
+    };
+  } catch (err) {
+    console.error("[feedback] getMyFeedback error", err);
+    return { authenticated: false, items: [], error: "Unable to load your feedback" };
   }
 }
 
@@ -41,6 +114,7 @@ export async function moderateFeedback(id: string, status: string) {
       return { error: "Unable to update this feedback. Only consented feedback can be approved." };
     }
     revalidatePath("/feedback");
+    revalidatePath("/reviews");
     revalidatePath("/admin/feedback");
     return { success: true };
   } catch {

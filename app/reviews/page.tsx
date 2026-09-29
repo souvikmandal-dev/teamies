@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { FeedbackCard, type Review } from "@/components/feedback-list";
+import { MyFeedbackList } from "@/components/my-feedback-list";
 import { TeamiesLogo } from "@/components/teamies-logo";
 import { feedbackTypes } from "@/lib/feedback/validation";
+import { getMyFeedback } from "@/app/actions/feedback";
 
 export const metadata = {
-  title: "Community Reviews",
-  description: "Approved reviews and feedback from the Teamies beta community.",
+  title: "Reviews & Feedback",
+  description: "Community reviews and personal feedback from Teamies beta builders.",
 };
 
 export default async function ReviewsPage({
@@ -15,6 +17,7 @@ export default async function ReviewsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
+  const activeTab = params.tab === "my-feedback" ? "my-feedback" : "community";
   const type =
     typeof params.type === "string" && Object.hasOwn(feedbackTypes, params.type)
       ? params.type
@@ -27,6 +30,11 @@ export default async function ReviewsPage({
     data: { user },
   } = await db.auth.getUser();
   const admin = user ? (await db.rpc("is_feedback_admin")).data === true : false;
+
+  // Always fetch my feedback for authenticated users so the badge count is available
+  const myFeedbackResult = await getMyFeedback();
+  const myFeedbackItems = myFeedbackResult.items || [];
+  const myFeedbackCount = myFeedbackItems.length;
 
   // Query live database reviews
   let query = db
@@ -46,7 +54,7 @@ export default async function ReviewsPage({
     console.error("[reviews] query failed", { code: error.code });
   }
 
-  // Live database statistics
+  // Live database statistics from approved reviews
   const { data: allApproved } = await db
     .from("feedback_reviews")
     .select("rating, feedback_type");
@@ -66,6 +74,7 @@ export default async function ReviewsPage({
 
   const pageLink = (p: number) =>
     `/reviews?${new URLSearchParams({
+      tab: activeTab,
       type,
       sort: highest ? "rating" : "latest",
       page: String(p),
@@ -120,10 +129,12 @@ export default async function ReviewsPage({
               </span>
             </div>
             <h1 className="mt-2 text-3xl sm:text-4xl font-sans font-bold tracking-tight">
-              Community Reviews
+              {activeTab === "my-feedback" ? "My Submissions" : "Community Reviews"}
             </h1>
             <p className="mt-2 text-base text-(--theme-text-muted) max-w-2xl leading-relaxed">
-              Real feedback, suggestions, and experiences from builders participating in the Teamies private beta.
+              {activeTab === "my-feedback"
+                ? "Track the moderation and publication status of your feedback and suggestions."
+                : "Real feedback, feature requests, and experiences from builders participating in the Teamies private beta."}
             </p>
           </div>
           <div className="shrink-0 pt-2 sm:pt-0">
@@ -137,150 +148,221 @@ export default async function ReviewsPage({
           </div>
         </div>
 
-        {/* Live Statistics */}
-        <div className="my-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-xl border border-(--theme-border) bg-(--theme-surface) p-4 text-center">
-            <div className="text-2xl font-bold font-sans text-(--theme-text)">
-              {avgRating ? `${avgRating}` : "—"}
-              {avgRating && <span className="text-amber-500 text-lg ml-1">★</span>}
-            </div>
-            <div className="mt-1 text-[11px] font-mono uppercase tracking-wider text-(--theme-text-muted)">
-              Average Rating
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-(--theme-border) bg-(--theme-surface) p-4 text-center">
-            <div className="text-2xl font-bold font-sans text-(--theme-text)">
-              {totalApproved}
-            </div>
-            <div className="mt-1 text-[11px] font-mono uppercase tracking-wider text-(--theme-text-muted)">
-              Approved Reviews
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-(--theme-border) bg-(--theme-surface) p-4 text-center">
-            <div className="text-2xl font-bold font-sans text-(--theme-text)">
-              {featureCount}
-            </div>
-            <div className="mt-1 text-[11px] font-mono uppercase tracking-wider text-(--theme-text-muted)">
-              Feature Ideas
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-(--theme-border) bg-(--theme-surface) p-4 text-center">
-            <div className="text-2xl font-bold font-sans text-(--theme-text)">
-              {bugCount}
-            </div>
-            <div className="mt-1 text-[11px] font-mono uppercase tracking-wider text-(--theme-text-muted)">
-              Bugs Handled
-            </div>
-          </div>
-        </div>
-
-        {/* Filter Controls */}
-        <section
-          aria-label="Filter community reviews"
-          className="mb-8 rounded-xl border border-(--theme-border) bg-(--theme-surface) p-4 sm:p-5"
+        {/* Tab Navigation Header */}
+        <nav
+          aria-label="Reviews section navigation"
+          className="my-8 flex border-b border-(--theme-border)"
         >
-          <form className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <label className="text-xs font-mono uppercase tracking-wider text-(--theme-text-muted)">
-                Filter:
-              </label>
-              <select
-                name="type"
-                defaultValue={type}
-                className="rounded-md border border-(--theme-border) bg-(--theme-bg) px-3 py-1.5 text-xs text-(--theme-text) outline-none focus:border-(--theme-accent)"
-              >
-                <option value="">All Categories</option>
-                {Object.entries(feedbackTypes).map(([key, label]) => (
-                  <option key={key} value={key}>
-                    {label}
-                  </option>
-                ))}
-              </select>
+          <Link
+            href="/reviews?tab=community"
+            className={`flex items-center gap-2 px-5 py-3 border-b-2 text-sm transition-colors ${
+              activeTab === "community"
+                ? "border-(--theme-accent) text-(--theme-text) font-semibold"
+                : "border-transparent text-(--theme-text-muted) hover:text-(--theme-text)"
+            }`}
+          >
+            <span>Community Reviews</span>
+            <span className="rounded-full bg-(--theme-surface-hover,var(--theme-surface)) px-2 py-0.5 text-xs font-mono text-(--theme-text-muted)">
+              {totalApproved}
+            </span>
+          </Link>
+          <Link
+            href="/reviews?tab=my-feedback"
+            className={`flex items-center gap-2 px-5 py-3 border-b-2 text-sm transition-colors ${
+              activeTab === "my-feedback"
+                ? "border-(--theme-accent) text-(--theme-text) font-semibold"
+                : "border-transparent text-(--theme-text-muted) hover:text-(--theme-text)"
+            }`}
+          >
+            <span>My Feedback</span>
+            {myFeedbackCount > 0 && (
+              <span className="rounded-full bg-(--theme-accent)/10 text-(--theme-accent) px-2 py-0.5 text-xs font-mono font-medium">
+                {myFeedbackCount}
+              </span>
+            )}
+          </Link>
+        </nav>
 
-              <label className="text-xs font-mono uppercase tracking-wider text-(--theme-text-muted) ml-2">
-                Sort:
-              </label>
-              <select
-                name="sort"
-                defaultValue={highest ? "rating" : "latest"}
-                className="rounded-md border border-(--theme-border) bg-(--theme-bg) px-3 py-1.5 text-xs text-(--theme-text) outline-none focus:border-(--theme-accent)"
-              >
-                <option value="latest">Latest First</option>
-                <option value="rating">Highest Rated</option>
-              </select>
-
-              <button type="submit" className="button-secondary text-xs">
-                Apply
-              </button>
-            </div>
-
-            <div className="text-xs text-(--theme-text-muted)">
-              Showing {count ?? 0} {count === 1 ? "review" : "reviews"}
-            </div>
-          </form>
-        </section>
-
-        {/* Reviews List */}
-        {error ? (
-          <div role="alert" className="rounded-xl border border-(--theme-warn)/30 bg-(--theme-warn-soft)/30 p-6 text-center text-sm">
-            <p className="text-(--theme-warn)">Unable to load community reviews right now.</p>
-            <Link href="/reviews" className="action-link-secondary mt-2 inline-block text-xs">
-              Refresh page
-            </Link>
-          </div>
-        ) : data && data.length > 0 ? (
-          <div className="space-y-4">
-            {(data as Review[]).map((review, index) => (
-              <FeedbackCard key={`${review.created_at}-${index}`} review={review} />
-            ))}
-
-            {/* Pagination */}
-            <nav
-              aria-label="Review pagination"
-              className="flex items-center justify-between border-t border-(--theme-border) pt-6 mt-8"
-            >
-              {page > 1 ? (
-                <Link className="action-link-secondary text-xs font-medium" href={pageLink(page - 1)}>
-                  ← Previous page
-                </Link>
-              ) : (
-                <span />
-              )}
-              <span className="text-xs text-(--theme-text-muted) font-mono">Page {page}</span>
-              {(count ?? 0) > page * 20 ? (
-                <Link className="action-link-secondary text-xs font-medium" href={pageLink(page + 1)}>
-                  Next page →
-                </Link>
-              ) : (
-                <span />
-              )}
-            </nav>
-          </div>
+        {/* Tab 1: My Feedback */}
+        {activeTab === "my-feedback" ? (
+          <MyFeedbackList
+            initialItems={myFeedbackItems}
+            isAuthenticated={Boolean(user)}
+            userEmail={user?.email}
+          />
         ) : (
-          <div className="rounded-xl border border-dashed border-(--theme-border) bg-(--theme-surface) p-10 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-(--theme-accent-soft) text-(--theme-accent)">
-              ★
+          /* Tab 2: Community Reviews */
+          <>
+            {/* Live Statistics */}
+            <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div className="rounded-xl border border-(--theme-border) bg-(--theme-surface) p-4 text-center">
+                <div className="text-2xl font-bold font-sans text-(--theme-text)">
+                  {avgRating ? `${avgRating}` : "—"}
+                  {avgRating && <span className="text-amber-500 text-lg ml-1">★</span>}
+                </div>
+                <div className="mt-1 text-[11px] font-mono uppercase tracking-wider text-(--theme-text-muted)">
+                  Average Rating
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-(--theme-border) bg-(--theme-surface) p-4 text-center">
+                <div className="text-2xl font-bold font-sans text-(--theme-text)">
+                  {totalApproved}
+                </div>
+                <div className="mt-1 text-[11px] font-mono uppercase tracking-wider text-(--theme-text-muted)">
+                  Approved Reviews
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-(--theme-border) bg-(--theme-surface) p-4 text-center">
+                <div className="text-2xl font-bold font-sans text-(--theme-text)">
+                  {featureCount}
+                </div>
+                <div className="mt-1 text-[11px] font-mono uppercase tracking-wider text-(--theme-text-muted)">
+                  Feature Ideas
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-(--theme-border) bg-(--theme-surface) p-4 text-center">
+                <div className="text-2xl font-bold font-sans text-(--theme-text)">
+                  {bugCount}
+                </div>
+                <div className="mt-1 text-[11px] font-mono uppercase tracking-wider text-(--theme-text-muted)">
+                  Bugs Handled
+                </div>
+              </div>
             </div>
-            <h2 className="mt-4 text-lg font-semibold text-(--theme-text)">
-              No approved reviews in this view yet
-            </h2>
-            <p className="mt-2 text-sm text-(--theme-text-muted) max-w-md mx-auto leading-relaxed">
-              We review every submission before publishing. As an early beta tester, your feedback will directly shape Teamies!
-            </p>
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-              <Link href="/feedback" className="button-primary text-xs">
-                Write a Review
-              </Link>
-              {type && (
-                <Link href="/reviews" className="button-secondary text-xs">
-                  Clear Filter
+
+            {/* Filter Controls */}
+            <section
+              aria-label="Filter community reviews"
+              className="mb-8 rounded-xl border border-(--theme-border) bg-(--theme-surface) p-4 sm:p-5"
+            >
+              <form className="flex flex-wrap items-center justify-between gap-4">
+                <input type="hidden" name="tab" value="community" />
+                <div className="flex flex-wrap items-center gap-3">
+                  <label className="text-xs font-mono uppercase tracking-wider text-(--theme-text-muted)">
+                    Filter:
+                  </label>
+                  <select
+                    name="type"
+                    defaultValue={type}
+                    className="rounded-md border border-(--theme-border) bg-(--theme-bg) px-3 py-1.5 text-xs text-(--theme-text) outline-none focus:border-(--theme-accent)"
+                  >
+                    <option value="">All Categories</option>
+                    {Object.entries(feedbackTypes).map(([key, label]) => (
+                      <option key={key} value={key}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+
+                  <label className="text-xs font-mono uppercase tracking-wider text-(--theme-text-muted) ml-2">
+                    Sort:
+                  </label>
+                  <select
+                    name="sort"
+                    defaultValue={highest ? "rating" : "latest"}
+                    className="rounded-md border border-(--theme-border) bg-(--theme-bg) px-3 py-1.5 text-xs text-(--theme-text) outline-none focus:border-(--theme-accent)"
+                  >
+                    <option value="latest">Latest First</option>
+                    <option value="rating">Highest Rated</option>
+                  </select>
+
+                  <button type="submit" className="button-secondary text-xs">
+                    Apply
+                  </button>
+                </div>
+
+                <div className="text-xs text-(--theme-text-muted)">
+                  Showing {count ?? 0} {count === 1 ? "review" : "reviews"}
+                </div>
+              </form>
+            </section>
+
+            {/* Reviews List */}
+            {error ? (
+              <div
+                role="alert"
+                className="rounded-xl border border-(--theme-warn)/30 bg-(--theme-warn-soft)/30 p-6 text-center text-sm"
+              >
+                <p className="text-(--theme-warn)">Unable to load community reviews right now.</p>
+                <Link
+                  href="/reviews"
+                  className="action-link-secondary mt-2 inline-block text-xs"
+                >
+                  Refresh page
                 </Link>
-              )}
-            </div>
-          </div>
+              </div>
+            ) : data && data.length > 0 ? (
+              <div className="space-y-4">
+                {(data as Review[]).map((review, index) => (
+                  <FeedbackCard
+                    key={`${review.created_at}-${index}`}
+                    review={review}
+                  />
+                ))}
+
+                {/* Pagination */}
+                <nav
+                  aria-label="Review pagination"
+                  className="flex items-center justify-between border-t border-(--theme-border) pt-6 mt-8"
+                >
+                  {page > 1 ? (
+                    <Link
+                      className="action-link-secondary text-xs font-medium"
+                      href={pageLink(page - 1)}
+                    >
+                      ← Previous page
+                    </Link>
+                  ) : (
+                    <span />
+                  )}
+                  <span className="text-xs text-(--theme-text-muted) font-mono">
+                    Page {page}
+                  </span>
+                  {(count ?? 0) > page * 20 ? (
+                    <Link
+                      className="action-link-secondary text-xs font-medium"
+                      href={pageLink(page + 1)}
+                    >
+                      Next page →
+                    </Link>
+                  ) : (
+                    <span />
+                  )}
+                </nav>
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-(--theme-border) bg-(--theme-surface) p-10 text-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-(--theme-accent-soft) text-(--theme-accent)">
+                  ★
+                </div>
+                <h2 className="mt-4 text-lg font-semibold text-(--theme-text)">
+                  No approved reviews in this view yet
+                </h2>
+                <p className="mt-2 text-sm text-(--theme-text-muted) max-w-md mx-auto leading-relaxed">
+                  We review every submission before publishing. As an early beta tester, your feedback will directly shape Teamies!
+                </p>
+                <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                  <Link href="/feedback" className="button-primary text-xs">
+                    Write a Review
+                  </Link>
+                  <Link
+                    href="/reviews?tab=my-feedback"
+                    className="button-secondary text-xs"
+                  >
+                    View My Feedback
+                  </Link>
+                  {type && (
+                    <Link href="/reviews" className="action-link-secondary text-xs">
+                      Clear Filter
+                    </Link>
+                  )}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </main>

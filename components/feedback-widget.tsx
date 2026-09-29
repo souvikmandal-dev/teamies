@@ -58,12 +58,27 @@ export function FeedbackWidget() {
             Close
           </button>
         </div>
-        <FeedbackForm key={`${path}-${formKey}`} context={path} />
-        <p className="mt-5 border-t border-dashed border-(--theme-border) pt-4">
-          <Link href="/reviews" onClick={handleClose} className="action-link-secondary text-xs">
-            Read community reviews →
+        <FeedbackForm
+          key={`${path}-${formKey}`}
+          context={path}
+          onClose={handleClose}
+        />
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-dashed border-(--theme-border) pt-4 text-xs">
+          <Link
+            href="/reviews"
+            onClick={handleClose}
+            className="action-link-secondary"
+          >
+            Read Community Reviews →
           </Link>
-        </p>
+          <Link
+            href="/reviews?tab=my-feedback"
+            onClick={handleClose}
+            className="text-(--theme-text-muted) hover:text-(--theme-text) transition-colors"
+          >
+            Track My Feedback →
+          </Link>
+        </div>
       </dialog>
     </>
   );
