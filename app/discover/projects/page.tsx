@@ -243,6 +243,9 @@ export default function ProjectDiscoveryPage() {
             <Link href="/dashboard" className="text-[var(--theme-text-muted)] hover:text-[var(--theme-text)]">
               Dashboard
             </Link>
+            <Link href="/feedback" className="text-[var(--theme-text-muted)] hover:text-[var(--theme-text)]">
+              Feedback
+            </Link>
             <Link href="/projects/new" className="button-primary">
               Create Project
             </Link>

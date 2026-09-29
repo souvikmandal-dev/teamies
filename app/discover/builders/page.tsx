@@ -123,6 +123,7 @@ export default function BuilderDiscoveryPage() {
           <nav className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-medium" aria-label="Discovery navigation">
             <Link href="/discover/projects" className="text-(--theme-text-muted) hover:text-(--theme-text)">Discover Projects</Link>
             <Link href="/dashboard" className="text-(--theme-text-muted) hover:text-(--theme-text)">Dashboard</Link>
+            <Link href="/feedback" className="text-(--theme-text-muted) hover:text-(--theme-text)">Feedback</Link>
           </nav>
         </div>
       </header>

@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isMissingColumnError } from "@/lib/supabase/schema-compat";
 import { formatRelativeActivity, isProjectStale } from "@/lib/time";
 import { humanize } from "@/lib/humanize";
+import { BetaWelcomeBanner } from "@/components/beta-welcome-banner";
 
 type ExperienceLevel = "beginner" | "intermediate" | "advanced";
 type BuilderMode =
@@ -468,6 +469,12 @@ export default async function DashboardPage() {
               Discover Builders
             </Link>
             <Link
+              href="/feedback"
+              className="rounded-md px-3.5 py-1.5 text-xs font-medium text-[var(--theme-text-muted)] hover:text-[var(--theme-text)]"
+            >
+              Feedback
+            </Link>
+            <Link
               href="/projects/new"
               className="button-primary text-xs"
             >
@@ -494,6 +501,7 @@ export default async function DashboardPage() {
       </header>
 
       <div className="mx-auto max-w-7xl px-5 pb-20 pt-8 sm:px-8 sm:pb-24 sm:pt-12 lg:px-10">
+        <BetaWelcomeBanner />
         <section aria-labelledby="welcome-heading">
           <p className="font-mono text-xs uppercase tracking-[0.16em] text-[var(--theme-text-muted)]">
             Your dashboard

@@ -35,6 +35,12 @@ export default function Home() {
               Find Builders
             </Link>
             <Link
+              href="/feedback"
+              className="transition-colors hover:text-(--theme-text)"
+            >
+              Feedback
+            </Link>
+            <Link
               href="/login"
               className="transition-colors hover:text-(--theme-text)"
             >
