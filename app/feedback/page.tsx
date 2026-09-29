@@ -34,6 +34,7 @@ export default async function FeedbackPage({ searchParams }: { searchParams: Pro
     <header className="flex flex-wrap items-center justify-between gap-4 px-5 py-4 sm:px-8 border-b border-(--theme-border)">
       <Link href="/" aria-label="Teamies home"><TeamiesLogo /></Link>
       <nav className="flex items-center gap-4 text-sm font-medium">
+        <Link href="/reviews" className="text-(--theme-text-muted) hover:text-(--theme-text) transition-colors">Community Reviews</Link>
         <Link href="/dashboard" className="text-(--theme-text-muted) hover:text-(--theme-text) transition-colors">Dashboard</Link>
         <Link href="/discover/projects" className="text-(--theme-text-muted) hover:text-(--theme-text) transition-colors">Explore Projects</Link>
         {admin && <Link href="/admin/feedback" className="badge-active">Moderate feedback</Link>}
@@ -50,7 +51,10 @@ export default async function FeedbackPage({ searchParams }: { searchParams: Pro
         </section>
 
         <section aria-labelledby="reviews-heading">
-          <h2 id="reviews-heading" className="text-xl font-semibold">Community reviews</h2>
+          <div className="flex items-center justify-between">
+            <h2 id="reviews-heading" className="text-xl font-semibold">Community reviews</h2>
+            <Link href="/reviews" className="action-link-secondary text-xs">View full page →</Link>
+          </div>
           <p className="mt-2 text-sm text-(--theme-text-muted)">Only reviews shared with permission and approved by a moderator appear here.</p>
 
           {totalApproved > 0 && (

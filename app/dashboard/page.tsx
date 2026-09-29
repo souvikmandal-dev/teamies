@@ -469,6 +469,12 @@ export default async function DashboardPage() {
               Discover Builders
             </Link>
             <Link
+              href="/reviews"
+              className="rounded-md px-3.5 py-1.5 text-xs font-medium text-[var(--theme-text-muted)] hover:text-[var(--theme-text)]"
+            >
+              Reviews
+            </Link>
+            <Link
               href="/feedback"
               className="rounded-md px-3.5 py-1.5 text-xs font-medium text-[var(--theme-text-muted)] hover:text-[var(--theme-text)]"
             >

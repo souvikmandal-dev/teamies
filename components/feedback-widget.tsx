@@ -60,7 +60,7 @@ export function FeedbackWidget() {
         </div>
         <FeedbackForm key={`${path}-${formKey}`} context={path} />
         <p className="mt-5 border-t border-dashed border-(--theme-border) pt-4">
-          <Link href="/feedback" onClick={handleClose} className="action-link-secondary text-xs">
+          <Link href="/reviews" onClick={handleClose} className="action-link-secondary text-xs">
             Read community reviews →
           </Link>
         </p>
