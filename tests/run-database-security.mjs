@@ -29,6 +29,8 @@ try {
     console.log('PASS migration', f);
   }
   await db.query(await readFile('tests/security.sql', 'utf8'));
+  await db.query(await readFile('tests/feedback.sql', 'utf8'));
+  console.log('PASS feedback consent, privacy, moderation, replay, validation and authorization');
   console.log('PASS RLS, authorization, validation, replay, rate, deletion and privacy attacks');
 
   async function asUser(user, sql, args = []) {
@@ -77,6 +79,14 @@ try {
   const user=randomUUID(); await db.query('INSERT INTO auth.users(id) VALUES ($1)',[user]);
   const updates=await Promise.allSettled(Array.from({length:21},()=>asUser(user,"UPDATE public.profiles SET bio='rate race' WHERE id=auth.uid()")));
   assert.equal(updates.filter(x=>x.status==='fulfilled').length,20); console.log('PASS concurrent mutation rate limit');
+  const feedbackUser=randomUUID(); await db.query('INSERT INTO auth.users(id) VALUES ($1)',[feedbackUser]);
+  const submit=(request,title) => asUser(feedbackUser, `SELECT public.submit_feedback($1,'general',4,$2,'Concurrent submission test','/feedback',false,true)`,[request,title]);
+  const replay=randomUUID();
+  await Promise.all(Array.from({length:8},()=>submit(replay,'Same request')));
+  assert.equal((await db.query('SELECT count(*)::int n FROM public.feedback WHERE user_id=$1',[feedbackUser])).rows[0].n,1);
+  const bursts=await Promise.allSettled(Array.from({length:8},(_,i)=>submit(randomUUID(),'Unique report '+i)));
+  assert.equal(bursts.filter(r=>r.status==='fulfilled').length,4);
+  console.log('PASS feedback concurrent idempotency and durable 5/hour limit');
 } finally {
   if (db) await db.end();
   await cluster.stop();
