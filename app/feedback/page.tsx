@@ -13,7 +13,9 @@ export default async function FeedbackPage({ searchParams }: { searchParams: Pro
   const page = Math.min(10000, Math.max(1, Number(params.page) || 1)) | 0;
   const db = await createClient();
   const { data: { user } } = await db.auth.getUser();
-  const admin = user ? (await db.rpc("is_feedback_admin")).data === true : false;
+  const isDbAdmin = user ? (await db.rpc("is_feedback_admin")).data === true : false;
+  const isOwner = user?.email === "souvikmandal.work1@gmail.com";
+  const admin = isDbAdmin || isOwner;
   let query = db.from("feedback_reviews").select("feedback_type,rating,title,message,created_at,status,display_name", { count: "exact" });
   if (type) query = query.eq("feedback_type", type);
   if (highest) query = query.order("rating", { ascending: false });

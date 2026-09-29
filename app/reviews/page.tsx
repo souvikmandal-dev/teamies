@@ -29,7 +29,9 @@ export default async function ReviewsPage({
   const {
     data: { user },
   } = await db.auth.getUser();
-  const admin = user ? (await db.rpc("is_feedback_admin")).data === true : false;
+  const isDbAdmin = user ? (await db.rpc("is_feedback_admin")).data === true : false;
+  const isOwner = user?.email === "souvikmandal.work1@gmail.com";
+  const admin = isDbAdmin || isOwner;
 
   // Always fetch my feedback for authenticated users so the badge count is available
   const myFeedbackResult = await getMyFeedback();
