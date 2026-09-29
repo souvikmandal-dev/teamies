@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { FeedbackWidget } from "@/components/feedback-widget";
 import { APP_NAME, APP_DESCRIPTION } from "@/lib/brand";
 
 export const metadata: Metadata = {
@@ -28,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>{children}<FeedbackWidget /></body>
     </html>
   );
 }

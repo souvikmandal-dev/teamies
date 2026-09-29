@@ -324,3 +324,6 @@ select:-webkit-autofill:focus {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto; transition-duration: 0s; }
 }
+
+.feedback-dialog::backdrop { background: rgb(0 0 0 / 55%); }
+body:has(.feedback-dialog[open]) { overflow: hidden; }
