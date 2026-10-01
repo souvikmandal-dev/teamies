@@ -25,6 +25,12 @@ try {
     GRANT USAGE ON SCHEMA auth, public TO anon, authenticated, service_role;
     GRANT EXECUTE ON FUNCTION auth.uid() TO anon, authenticated, service_role;`);
   for (const f of (await readdir('supabase/migrations')).sort()) {
+    // Historical cleanup migration 013 assumes this fixed account exists.
+    // Seed it only in this disposable cluster so every migration can run.
+    if (f === '013_remove_test_bots.sql') {
+      await db.query(`INSERT INTO auth.users(id,email,raw_user_meta_data)
+        VALUES ('e7a63d1c-0576-474b-af28-08becc9c9979','migration-admin@example.invalid','{"full_name":"Migration fixture"}')`);
+    }
     await db.query(await readFile(join('supabase/migrations', f), 'utf8'));
     console.log('PASS migration', f);
   }
