@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { enforceRateLimit } from "@/app/actions/mutations";
 import { isUuid, isRecord, validProjectInput, validRoleInput, boundedText, optionalText, integerIn, validSkills } from "@/lib/validation";
 import { isValidSocialUrl } from "@/lib/social-urls";
+import { removeProjectAsAdmin } from "@/app/actions/admin";
 
 export type ActionResult<T = unknown> = {
   success: boolean;
@@ -266,37 +267,13 @@ export async function updateProjectLifecycle(
 }
 
 /**
- * Permanently delete project with deliberate confirmation (matching exact project name).
+ * Legacy entry point: permanent project deletion is restricted to admins.
  */
 export async function deleteProjectPermanently(
   projectId: string,
   confirmedName: string,
 ): Promise<ActionResult> {
-  const rateCheck = await enforceRateLimit("project_delete");
-  if (!rateCheck.success) {
-    return { success: false, error: rateCheck.error };
-  }
-
-  const { error: authError, project, supabase } = await verifyProjectOwner(projectId);
-  if (authError || !project || !supabase) {
-    return { success: false, error: authError || "Unauthorized" };
-  }
-
-  if (typeof confirmedName !== "string" || confirmedName !== project.name) {
-    return { success: false, error: "Project name confirmation does not match." };
-  }
-
-  // Attempt atomic confirmed deletion via RPC first (migration 010)
-  const { data: rpcSuccess, error: rpcError } = await supabase.rpc("delete_project_confirmed", {
-    p_project_id: projectId,
-    p_confirmed_name: confirmedName,
-  });
-
-  if (!rpcError && rpcSuccess === true) {
-    return { success: true };
-  }
-
-  return { success: false, error: "Could not delete this project. Refresh and try again." };
+  return removeProjectAsAdmin(projectId, confirmedName);
 }
 
 /**
@@ -757,4 +734,3 @@ export async function submitReportAction(input: {
 
   return { success: true };
 }
-

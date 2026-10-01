@@ -110,6 +110,9 @@ ON CONFLICT (user_id) DO NOTHING;`}
           <Link href="/reviews" className="action-link-secondary text-xs">
             ← Community Reviews
           </Link>
+          <Link href="/admin" className="ml-4 action-link-secondary text-xs">
+            Manage projects & builders
+          </Link>
           <h1 className="mt-3 text-3xl font-bold font-sans tracking-tight">
             Feedback Moderation
           </h1>

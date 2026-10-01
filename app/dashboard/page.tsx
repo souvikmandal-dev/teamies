@@ -158,6 +158,8 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
+  const { data: isAdmin } = await supabase.rpc("is_platform_admin");
+
   const { data, error: profileError } = await supabase
     .from("profiles")
     .select(
@@ -480,6 +482,11 @@ export default async function DashboardPage() {
             >
               Feedback
             </Link>
+            {isAdmin === true ? (
+              <Link href="/admin" className="rounded-md px-3.5 py-1.5 text-xs font-medium text-[var(--theme-accent)]">
+                Admin Console
+              </Link>
+            ) : null}
             <Link
               href="/projects/new"
               className="button-primary text-xs"

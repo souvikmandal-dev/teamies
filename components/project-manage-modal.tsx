@@ -5,7 +5,6 @@ import {
   updateProjectDetails,
   updateRecruitingStatus,
   updateProjectLifecycle,
-  deleteProjectPermanently,
   addProjectRole,
   updateProjectRole,
   toggleProjectRoleStatus,
@@ -79,7 +78,6 @@ interface ProjectManageModalProps {
   profiles: Record<string, Profile>;
   occupancyByRole: Record<string, number>;
   onProjectUpdated: () => Promise<void>;
-  onProjectDeleted: () => void;
 }
 
 const inputClassName =
@@ -97,7 +95,6 @@ export function ProjectManageModal({
   profiles,
   occupancyByRole,
   onProjectUpdated,
-  onProjectDeleted,
 }: ProjectManageModalProps) {
   const [activeTab, setActiveTab] = useState<"details" | "roles" | "team" | "danger">("details");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -139,9 +136,6 @@ export function ProjectManageModal({
 
   // Member removal confirmation
   const [confirmRemoveMemberId, setConfirmRemoveMemberId] = useState<string | null>(null);
-
-  // Delete project confirmation
-  const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
   if (!isOpen) return null;
 
@@ -332,24 +326,6 @@ export function ProjectManageModal({
     } else {
       setFeedbackNotice(`Project marked as ${status}.`);
       await onProjectUpdated();
-    }
-  }
-
-  async function handleDeleteProject() {
-    if (deleteConfirmText.trim().toLowerCase() !== project.name.trim().toLowerCase()) {
-      setFeedbackError("Project name confirmation does not match.");
-      return;
-    }
-
-    setIsSubmitting(true);
-    setFeedbackError("");
-    const res = await deleteProjectPermanently(project.id, deleteConfirmText);
-    setIsSubmitting(false);
-    if (!res.success) {
-      setFeedbackError(res.error || "Failed to delete project.");
-    } else {
-      onClose();
-      onProjectDeleted();
     }
   }
 
@@ -1089,40 +1065,10 @@ export function ProjectManageModal({
                 </div>
               </div>
 
-              {/* Danger Zone: Permanent Deletion */}
-              <div className="p-5 rounded-lg border border-[var(--theme-warn)] bg-[var(--theme-warn-soft)] space-y-4">
-                <div>
-                  <h3 className="font-sans font-bold text-sm text-[var(--theme-warn)]">
-                    Permanent Deletion
-                  </h3>
-                  <p className="mt-1 text-xs text-[var(--theme-text-muted)]">
-                    This permanently removes the project, all roles, memberships, and applications. This action cannot be undone.
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-mono text-[var(--theme-text)] mb-1">
-                    To confirm, please type <span className="font-bold underline">{project.name}</span>:
-                  </label>
-                  <input
-                    type="text"
-                    value={deleteConfirmText}
-                    onChange={(e) => setDeleteConfirmText(e.target.value)}
-                    placeholder={project.name}
-                    className="h-9 w-full rounded border border-[var(--theme-warn)] bg-[var(--theme-surface)] px-3 text-xs text-[var(--theme-text)] outline-none"
-                  />
-                </div>
-
-                <div className="flex justify-end">
-                  <button
-                    type="button"
-                    onClick={handleDeleteProject}
-                    disabled={isSubmitting || deleteConfirmText.trim().toLowerCase() !== project.name.trim().toLowerCase()}
-                    className="button-danger text-xs disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? "Deleting..." : "Permanently delete project"}
-                  </button>
-                </div>
+              <div className="p-4 rounded-lg border border-[var(--theme-border)] bg-[var(--theme-bg)]">
+                <p className="text-xs text-[var(--theme-text-muted)]">
+                  Only an admin can permanently remove a project. You can archive or cancel this project above.
+                </p>
               </div>
             </div>
           )}
@@ -1131,4 +1077,3 @@ export function ProjectManageModal({
     </div>
   );
 }
-
