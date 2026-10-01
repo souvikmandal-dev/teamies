@@ -1,10 +1,12 @@
--- Runs only against an isolated test database after migrations 001–010.
+-- Runs only against an isolated test database after all migrations.
 -- Fixtures are synthetic. Never execute on production.
 INSERT INTO auth.users(id) VALUES
  ('10000000-0000-0000-0000-000000000001'),
  ('10000000-0000-0000-0000-000000000002'),
  ('10000000-0000-0000-0000-000000000003'),
- ('10000000-0000-0000-0000-000000000004');
+ ('10000000-0000-0000-0000-000000000004'),
+ ('10000000-0000-0000-0000-000000000005');
+INSERT INTO public.feedback_admins VALUES ('10000000-0000-0000-0000-000000000005');
 CREATE FUNCTION pg_temp.assert_true(ok boolean, label text) RETURNS void LANGUAGE plpgsql AS $$
 BEGIN IF ok IS DISTINCT FROM true THEN RAISE EXCEPTION 'FAILED: %', label; END IF; END $$;
 CREATE FUNCTION pg_temp.denied(statement text, label text) RETURNS void LANGUAGE plpgsql AS $$
@@ -29,14 +31,14 @@ SELECT pg_temp.denied($q$UPDATE public.profiles SET github_url='javascript:alert
 SELECT pg_temp.denied($q$UPDATE public.profiles SET skills=ARRAY['JS','js'] WHERE id=auth.uid()$q$,'duplicate tags');
 SELECT pg_temp.denied($q$UPDATE public.profiles SET bio=repeat('x',2001) WHERE id=auth.uid()$q$,'oversized bio');
 SELECT pg_temp.denied($q$DELETE FROM public.projects$q$,'direct deletion bypass');
-SELECT pg_temp.assert_true(NOT public.delete_project_confirmed('20000000-0000-0000-0000-000000000001','wrong'), 'confirmation mismatch');
+SELECT pg_temp.denied($q$SELECT public.delete_project_confirmed('20000000-0000-0000-0000-000000000001','Test project')$q$, 'owner deletion denied');
 -- Applicant can submit, but cannot decide or read handoff data.
 SELECT set_config('request.jwt.claim.sub','10000000-0000-0000-0000-000000000002',false);
 INSERT INTO public.join_requests(id,project_id,applicant_id,project_role_id,message) VALUES
  ('40000000-0000-0000-0000-000000000001','20000000-0000-0000-0000-000000000001',auth.uid(),'30000000-0000-0000-0000-000000000001','Private pitch');
 SELECT pg_temp.assert_true((SELECT count(*)=0 FROM public.project_handoffs),'applicant private handoff denied');
 SELECT pg_temp.denied($q$UPDATE public.join_requests SET status='accepted' WHERE applicant_id=auth.uid()$q$,'self acceptance');
-SELECT pg_temp.assert_true(NOT public.delete_project_confirmed('20000000-0000-0000-0000-000000000001','Test project'),'IDOR delete');
+SELECT pg_temp.denied($q$SELECT public.delete_project_confirmed('20000000-0000-0000-0000-000000000001','Test project')$q$,'IDOR delete');
 UPDATE public.projects SET name='Hacked project' WHERE id='20000000-0000-0000-0000-000000000001';
 SELECT pg_temp.assert_true((SELECT name='Test project' FROM public.projects),'IDOR edit');
 SELECT pg_temp.assert_true(NOT (public.remove_project_member('20000000-0000-0000-0000-000000000001','50000000-0000-0000-0000-000000000001')->>'success')::boolean,'owner RPC denied');
@@ -88,7 +90,10 @@ UPDATE public.join_requests SET status='rejected' WHERE id='40000000-0000-0000-0
 SELECT set_config('request.jwt.claim.sub','10000000-0000-0000-0000-000000000004',false);
 SELECT pg_temp.assert_true((SELECT count(*)=1 FROM public.notifications),'rejection notification');
 SELECT set_config('request.jwt.claim.sub','10000000-0000-0000-0000-000000000001',false);
-SELECT pg_temp.assert_true(public.delete_project_confirmed('20000000-0000-0000-0000-000000000001','Test project'),'owner confirmed delete');
+SELECT pg_temp.denied($q$SELECT public.delete_project_confirmed('20000000-0000-0000-0000-000000000001','Test project')$q$,'legacy owner confirmed delete denied');
+SELECT set_config('request.jwt.claim.sub','10000000-0000-0000-0000-000000000005',false);
+SELECT pg_temp.assert_true(NOT public.delete_project_confirmed('20000000-0000-0000-0000-000000000001','wrong'),'confirmation mismatch');
+SELECT pg_temp.assert_true(public.delete_project_confirmed('20000000-0000-0000-0000-000000000001','Test project'),'admin confirmed delete');
 SELECT pg_temp.assert_true((SELECT count(*)=0 FROM public.project_handoffs),'handoff cascade');
 RESET ROLE;
 SET ROLE anon;

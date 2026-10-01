@@ -20,7 +20,7 @@ try {
   await cluster.initialise(); await cluster.start();
   db = cluster.getPgClient('postgres', '127.0.0.1'); await db.connect();
   await db.query(`CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role BYPASSRLS;
-    CREATE SCHEMA auth; CREATE TABLE auth.users(id uuid PRIMARY KEY, raw_user_meta_data jsonb DEFAULT '{}');
+    CREATE SCHEMA auth; CREATE TABLE auth.users(id uuid PRIMARY KEY, email text, raw_user_meta_data jsonb DEFAULT '{}');
     CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
     GRANT USAGE ON SCHEMA auth, public TO anon, authenticated, service_role;
     GRANT EXECUTE ON FUNCTION auth.uid() TO anon, authenticated, service_role;`);
@@ -30,6 +30,8 @@ try {
   }
   await db.query(await readFile('tests/security.sql', 'utf8'));
   await db.query(await readFile('tests/feedback.sql', 'utf8'));
+  await db.query(await readFile('tests/admin-removal.sql', 'utf8'));
+  console.log('PASS admin-only removal, legacy bypass denial, confirmation, protected admins and account cascades');
   console.log('PASS feedback consent, privacy, moderation, replay, validation and authorization');
   console.log('PASS RLS, authorization, validation, replay, rate, deletion and privacy attacks');
 
