@@ -314,7 +314,7 @@ export default function ProjectDiscoveryPage() {
             <button type="button" className="button-secondary" onClick={() => window.location.reload()}>Try again</button>
           </div>
         ) : filteredProjects.length > 0 ? (
-          <section className="mt-6 flex flex-col gap-3.5" aria-label="Open projects">
+          <section className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3" aria-label="Open projects">
             {filteredProjects.map((project) => {
               const projectRoles = rolesByProject[project.id] ?? [];
               const skills = [...new Set(projectRoles.flatMap((role) => role.required_skills ?? []))];
@@ -331,102 +331,70 @@ export default function ProjectDiscoveryPage() {
               return (
                 <article
                   key={project.id}
-                  className={`flex flex-col rounded-lg border border-[var(--theme-border)] bg-[var(--theme-surface)] p-5 transition hover:border-[var(--theme-text-muted)] ${
-                    isStale ? "status-rail-stale" : "status-rail-active"
-                  }`}
+                  className="flex min-w-0 flex-col rounded-xl border border-(--theme-border) bg-(--theme-surface) p-6 transition hover:border-(--theme-text-muted)"
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex flex-wrap items-center gap-2 font-mono text-xs text-[var(--theme-text-muted)]">
-                      <span>{project.category}</span>
-                      <span>·</span>
-                      <span>{humanize(project.project_type)}</span>
-                      <span>·</span>
-                      <span>{humanize(project.stage)}</span>
-                      <span>·</span>
-                      <span>{humanize(project.collaboration_type)}{project.city ? ` (${project.city})` : ""}</span>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
-                      {isRecruitingPaused ? (
-                        <span className="chip-badge bg-[var(--theme-warn-soft)] text-[var(--theme-warn)]">
-                          Recruiting paused
-                        </span>
-                      ) : isTeamFull ? (
-                        <span className="chip-badge bg-[var(--theme-surface-subtle)] text-[var(--theme-text-muted)]">
-                          Team full
-                        </span>
-                      ) : (
-                        <span className="chip-badge bg-[var(--theme-accent-soft)] text-[var(--theme-accent)]">
-                          Recruiting
-                        </span>
-                      )}
-                      {isStale ? (
-                        <>
-                          <span className="badge-stale">Stale</span>
-                          <span className="text-[var(--theme-text-muted)]">
-                            {formatRelativeActivity(project.last_activity_at ?? project.created_at)}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="badge-active">
-                          {formatRelativeActivity(project.last_activity_at ?? project.created_at)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="mt-3 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-2">
-                    <h2 className="text-xl font-semibold tracking-[-0.025em] text-[var(--theme-text)]">
-                      <Link
-                        href={`/projects/${project.id}`}
-                        className="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-accent)]"
-                      >
-                        {project.name}
-                      </Link>
-                    </h2>
-                    {projectRoles.length > 0 ? (
-                      <span className="font-mono text-xs text-[var(--theme-text-muted)] shrink-0">
-                        {projectRoles.length} open {projectRoles.length === 1 ? "role" : "roles"}
-                        {project.weekly_commitment !== null ? ` · ${project.weekly_commitment} hrs/wk` : ""}
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs font-mono uppercase tracking-[0.14em] text-(--theme-text-muted)">
+                      {humanize(project.stage)}
+                    </p>
+                    {project.weekly_commitment !== null ? (
+                      <span className="shrink-0 text-xs font-mono text-(--theme-text-muted)">
+                        {project.weekly_commitment}h/wk
                       </span>
-                    ) : (
-                      <span className="font-mono text-xs text-[var(--theme-text-muted)] shrink-0">
-                        No open roles
-                      </span>
-                    )}
+                    ) : null}
                   </div>
-
-                  <p className="mt-2 text-sm leading-6 text-[var(--theme-text-muted)] line-clamp-2">
+                  <h2 className="mt-3 text-2xl font-sans font-semibold tracking-[-0.035em] text-(--theme-text) [overflow-wrap:anywhere]">
+                    <Link
+                      href={`/projects/${project.id}`}
+                      className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--theme-accent)"
+                    >
+                      {project.name}
+                    </Link>
+                  </h2>
+                  <p className="mt-0.5 text-xs font-mono text-(--theme-text-muted)">
+                    By {owner?.full_name || owner?.username || "Teamies builder"}
+                  </p>
+                  <p className="mt-3 text-sm font-medium text-(--theme-text)">
+                    {project.category} · {humanize(project.project_type)}
+                  </p>
+                  <p className="mt-2 line-clamp-3 text-sm leading-6 text-(--theme-text-muted)">
                     {project.short_description}
                   </p>
-
-                  {/* Skills/Tags: small pill, --tag text on --tag-soft background, no border */}
+                  <div className="mt-4 space-y-1 text-xs text-(--theme-text-muted)">
+                    <p>{humanize(project.collaboration_type)}{project.city ? ` (${project.city})` : ""}</p>
+                    <p>
+                      {projectRoles.length > 0
+                        ? `${projectRoles.length} open ${projectRoles.length === 1 ? "role" : "roles"}`
+                        : "No open roles"}
+                    </p>
+                    <p>{ownerResponsiveness[project.owner_id] || "New owner"}</p>
+                  </div>
                   {skills.length > 0 ? (
-                    <div className="mt-3 flex flex-wrap gap-1.5">
+                    <ul className="mt-4 flex flex-wrap gap-1.5">
                       {skills.slice(0, 6).map((item) => (
-                        <span key={item.toLowerCase()} className="chip-tag">
-                          {item}
-                        </span>
+                        <li key={item.toLowerCase()} className="chip-tag">{item}</li>
                       ))}
-                    </div>
-                  ) : null}
-
-                  {/* Divider inside card: dashed --border line */}
-                  <div className="mt-4 pt-3.5 border-t border-dashed border-[var(--theme-border)]">
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="text-xs text-[var(--theme-text-muted)]">
-                        <span className="font-medium text-[var(--theme-text)]">
-                          By {owner?.full_name || owner?.username || "Teamies builder"}
-                        </span>
-                        <span className="mx-1.5">·</span>
-                        <span className="font-mono text-[11px]">
-                          {ownerResponsiveness[project.owner_id] || "New owner"}
-                        </span>
-                      </div>
-                      <Link
-                        href={`/projects/${project.id}`}
-                        className="action-link-secondary shrink-0"
-                      >
-                        View project
+                    </ul>
+                  ) : (
+                    <p className="mt-4 text-xs text-(--theme-text-muted)">No skills listed.</p>
+                  )}
+                  <div className="mt-4 flex flex-wrap items-center gap-2 font-mono text-xs">
+                    {isRecruitingPaused ? (
+                      <span className="chip-badge bg-(--theme-warn-soft) text-(--theme-warn)">Recruiting paused</span>
+                    ) : isTeamFull ? (
+                      <span className="chip-badge bg-(--theme-surface-subtle) text-(--theme-text-muted)">Team full</span>
+                    ) : (
+                      <span className="chip-badge bg-(--theme-accent-soft) text-(--theme-accent)">Recruiting</span>
+                    )}
+                    {isStale ? <span className="badge-stale">Stale</span> : null}
+                  </div>
+                  <div className="mt-auto pt-5">
+                    <div className="flex items-center justify-between gap-2 border-t border-dashed border-(--theme-border) pt-4">
+                      <span className="text-xs font-mono text-(--theme-text-muted)">
+                        {formatRelativeActivity(project.last_activity_at ?? project.created_at)}
+                      </span>
+                      <Link href={`/projects/${project.id}`} className="action-link-secondary shrink-0">
+                        View project →
                       </Link>
                     </div>
                   </div>
