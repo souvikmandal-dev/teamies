@@ -1231,9 +1231,6 @@ export default function ProjectDetailPage() {
           onProjectUpdated={async () => {
             await loadProject(false);
           }}
-          onProjectDeleted={() => {
-            router.push("/dashboard");
-          }}
         />
       )}
 

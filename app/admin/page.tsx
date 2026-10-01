@@ -10,6 +10,14 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
+type AdminProject = {
+  id: string;
+  name: string;
+  status: string;
+  owner_id: string;
+  profiles: { full_name: string | null; username: string | null } | null;
+};
+
 export default async function AdminPage({ searchParams }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
@@ -31,8 +39,9 @@ export default async function AdminPage({ searchParams }: {
   let builderQuery = db.from("profiles")
     .select("id,full_name,username,primary_role,projects!projects_owner_id_fkey(count)", { count: "exact" });
   if (search) {
-    projectQuery = isUuid(search) ? projectQuery.eq("id", search) : projectQuery.ilike("name", pattern);
-    builderQuery = isUuid(search)
+    const searchIsId = isUuid(search as unknown);
+    projectQuery = searchIsId ? projectQuery.eq("id", search) : projectQuery.ilike("name", pattern);
+    builderQuery = searchIsId
       ? builderQuery.eq("id", search)
       : search.startsWith("@")
         ? builderQuery.ilike("username", `%${search.slice(1).replace(/[\\%_]/g, "\\$&")}%`)
@@ -41,6 +50,7 @@ export default async function AdminPage({ searchParams }: {
   const start = (page - 1) * pageSize;
   const projectResult = tab === "projects"
     ? await projectQuery.order("created_at", { ascending: false }).order("id").range(start, start + pageSize - 1)
+        .overrideTypes<AdminProject[], { merge: false }>()
     : null;
   const builderResult = tab === "builders"
     ? await builderQuery.order("created_at", { ascending: false }).order("id").range(start, start + pageSize - 1)
